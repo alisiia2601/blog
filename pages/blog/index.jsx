@@ -1,29 +1,18 @@
 import Link from "next/link";
 import styles from "./blog.module.css";
 import Heading from "@components/heading";
-
-const mockData = [
-  {
-    id: "123",
-    title: "Community-Messaging Fit",
-    slug: "community-messaging-fit",
-    createdAt: "2022-02-15",
-    body: "<p>This is a good community fit!</p>",
-  },
-  {
-    id: "1234",
-    title: "Why you should use a react framework",
-    slug: "why-you-should-use-react-framework",
-    createdAt: "2022-02-12",
-    body: "<p>This is a good community fit!</p>",
-  },
-];
+import { getPosts, postsCacheKey } from "../../api-routes/posts";
+import useSWR from 'swr'
+import { useUser } from "@supabase/auth-helpers-react";
 
 export default function Blog() {
+  const user = useUser()
+
+  const {data: {data = []} = {}, error} = useSWR(postsCacheKey, getPosts);
   return (
-    <section>
+    <section className="w-full">
       <Heading>Blog</Heading>
-      {mockData.map((post) => (
+      {data?.map((post) => (
         <Link
           key={post.slug}
           className={styles.link}
