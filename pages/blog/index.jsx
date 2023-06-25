@@ -5,10 +5,14 @@ import { getPosts, postsCacheKey } from "../../api-routes/posts";
 import useSWR from 'swr'
 import { useUser } from "@supabase/auth-helpers-react";
 
-export default function Blog() {
+export default function Blog() {  
   const user = useUser()
 
-  const {data: {data = []} = {}, error} = useSWR(postsCacheKey, getPosts);
+  const {
+    data: {data = []} = {}, 
+    error
+  } = useSWR(postsCacheKey, getPosts)
+
   return (
     <section className="w-full">
       <Heading>Blog</Heading>
@@ -19,8 +23,8 @@ export default function Blog() {
           href={`/blog/${post.slug}`}
         >
           <div className="w-full flex flex-col">
-            <p>{post.title}</p>
-            <time className={styles.date}>{post.createdAt}</time>
+            <p className="text-xl">{post.title}</p>
+            <time className='text-sm text-accentPurple'>{post.created_at.slice(0, 16)}</time>
           </div>
         </Link>
       ))}

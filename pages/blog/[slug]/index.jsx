@@ -23,14 +23,11 @@ export default function BlogPost() {
   const { trigger: deleteTrigger, isMutating } = useSWRMutation(postsCacheKey, removePost, {
     onError: (error) => {
       console.log(error);
-    }
+    },
   });
 
   const handleDeletePost = async () => {
     const postId = data?.id;
-
-    if (!postId) return;
-
     const { status, error } = await deleteTrigger(postId);
 
     if (!error) {
@@ -42,37 +39,38 @@ export default function BlogPost() {
     router.push(`/blog/${slug}/edit`);
   };
 
-  if (!data) {
-    return <div>Loading...</div>; 
-  }
-
   return (
     <>
-      <section className={styles.container}>
-        <Heading>{data.title}</Heading>
-        {data?.image && <BlogImageBanner src={data.image} alt={data.title} />}
-        <div className={styles.dateContainer}>
-          <time className={styles.date}>{data.created_at}</time>
-          <div className={styles.border} />
-        </div>
-        <div dangerouslySetInnerHTML={{ __html: data.body }} />
-        <span className={styles.author}>
-          Author: {data?.Users?.alias ?? "Ghost Writer"}
-        </span>
-
-     
-        {user && user.id === data?.Users?.id && (
-          <div className="flex text-darkColor mt-2">
-            <Button onClick={handleDeletePost} className="mr-2">
-              Delete
-            </Button>
-            <Button onClick={handleEditPost}>Edit</Button>
+      {data && (
+        <section className={styles.container}>
+          {data.title && <Heading>{data.title}</Heading>}
+          {data.image && (
+            <BlogImageBanner src={data.image} alt={data.title} />
+          )}
+          <div className={styles.dateContainer}>
+            {data.created_at && (
+              <time className={styles.date}>{data.created_at}</time>
+            )}
+            <div className={styles.border} />
           </div>
-        )}
-      </section>
-      
-      {user && <AddComment postId={data.id} />}
-      <Comments postId={data.id} />
+          <div dangerouslySetInnerHTML={{ __html: data.body }} />
+          <span className={styles.author}>
+            Author: {data?.Users?.alias ?? "Ghost Writer"}
+          </span>
+
+          {user && (
+            <div className="flex text-darkColor mt-2">
+              <Button onClick={() => handleDeletePost(data.id)} className="mr-2">
+                Delete
+              </Button>
+              <Button onClick={handleEditPost}>Edit</Button>
+            </div>
+          )}
+        </section>
+      )}
+
+      {user && <AddComment postId={data?.id} />}
+      <Comments postId={data?.id} />
     </>
   );
 }
