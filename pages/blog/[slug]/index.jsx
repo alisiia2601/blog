@@ -55,7 +55,7 @@ export default function BlogPost() {
           </div>
           <div dangerouslySetInnerHTML={{ __html: data.body }} />
           <span className={styles.author}>
-            Author: {data?.Users?.alias ?? "Ghost Writer"}
+            Author: {data?.Users?.alias ?? "Author"}
           </span>
 
           {user && (
