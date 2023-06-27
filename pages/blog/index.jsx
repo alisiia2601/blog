@@ -1,20 +1,20 @@
-import Link from "next/link";
-import styles from "./blog.module.css";
-import Heading from "@components/heading";
-import { getPosts, postsCacheKey } from "../../api-routes/posts";
-import useSWR from 'swr'
-import { useUser } from "@supabase/auth-helpers-react";
+import Heading from '@components/heading';
+import Link from 'next/link';
+import styles from './blog.module.css';
+import useSWR from 'swr';
+import { manipulateDate } from '@/utils/manipulateDate';
+import { postCacheKey, getPosts } from '@/api-routes/posts';
+import { useUser } from '@supabase/auth-helpers-react';
 
-export default function Blog() {  
-  const user = useUser()
+export default function Blog() {
+  const { data: { data = [] } = {} } = useSWR(postCacheKey, getPosts);
 
-  const {
-    data: {data = []} = {}, 
-    error
-  } = useSWR(postsCacheKey, getPosts)
+
+  const user = useUser();
+  console.log(user);
 
   return (
-    <section className="w-full">
+    <section>
       <Heading>Blog</Heading>
       {data?.map((post) => (
         <Link
@@ -22,9 +22,11 @@ export default function Blog() {
           className={styles.link}
           href={`/blog/${post.slug}`}
         >
-          <div className="w-full flex flex-col">
-            <p className="text-xl">{post.title}</p>
-            <time className='text-sm text-accentPurple'>{post.created_at.slice(0, 16)}</time>
+          <div className='w-full flex flex-col'>
+            <p>{post.title}</p>
+            <time className={styles.date}>
+              {manipulateDate(post.created_at)}
+            </time>
           </div>
         </Link>
       ))}
