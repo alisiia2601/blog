@@ -36,7 +36,7 @@ export default function AddComment({ postId }) {
     console.log({newComment})
     console.log({ author, comment, postId });
     const { status, error } = await addCommentTrigger(newComment)
-  
+ 
     formRef.current.reset();
   };
 

@@ -11,7 +11,7 @@ export default function CreatePost() {
    const router = useRouter();
    const user = useUser()
   
-  const { trigger: addTrigger, isMutating } = useSWRMutation(postsCacheKey, addPost, {
+  const { trigger: addPostTrigger, isMutating } = useSWRMutation(postsCacheKey, addPost, {
     onError: (error) => {
       console.log(error);
     }
@@ -21,14 +21,13 @@ export default function CreatePost() {
     const slug = createSlug(titleInput);
     
     const newPost = {
-      title: titleInput,
       body: editorContent,
+      title: titleInput,
       slug,
       user_id: user.id,
       image,
     };
-    
-   const { status, error } = await addTrigger(newPost); 
+    const { status, error } = await addPostTrigger(newPost); 
     if (!error) {
       router.push(`/blog/${slug}`);
     }
