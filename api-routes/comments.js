@@ -1,31 +1,32 @@
-import { supabase } from '../lib/supabaseClient';
+import supabase from '@/lib/supabaseClient';
+
 export const commentsCacheKey = '/api/comments';
 
-export const getComments = async (postId) => {
+//GET all comments
+export const getComments = async (post_id) => {
   const { data, error, status } = await supabase
     .from('comments')
     .select('*')
-    .eq('post_id', postId);
+    .eq('post_id', post_id);
 
   return { data, error, status };
 };
 
-export const addComment = async (_, { arg: newComment }) => {
-  const { data, error, status } = await supabase
+//POST comment
+export const addComment = async (_, { arg: comment }) => {
+  const { error, status } = await supabase
     .from('comments')
-    .insert(newComment)
-    .single()
-    .eq('post_id', newComment.postId);
+    .insert({ ...comment });
 
-  return { data, error, status };
+  return { error, status };
 };
 
-export const deleteComment = async (_, { arg: id }) => {
-  const { data, error, status } = await supabase
+//DELETE comment
+export const removeComment = async (_, { arg: id }) => {
+  const { error, status } = await supabase
     .from('comments')
-    .delete(id)
-    .single()
+    .delete()
     .eq('id', id);
 
-  return { data, error, status };
+  return { error, status };
 };

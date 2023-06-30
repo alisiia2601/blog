@@ -2,17 +2,17 @@ import Button from '@components/button';
 import Input from '@components/input';
 import Label from '@components/label';
 import TextArea from '@components/text-area';
-import styles from './add-comment.module.css';
+import styles from '../../add-comment/add-comment.module.css';
 import useSWRMutation from 'swr/mutation';
-import { commentsCacheKey, addComment } from '@/api-routes/comments';
+import { repliesCacheKey, addReply } from '@/api-routes/replies';
 import { useRef } from 'react';
 
-export default function AddComment({ postId }) {
+export default function AddReply({ commentId, reply, setReply }) {
   const formRef = useRef(); // create a reference
 
-  const { trigger: addTrigger, isMutating } = useSWRMutation(
-    postId ? `${commentsCacheKey}${postId}` : null,
-    addComment
+  const { trigger: addReplyTrigger, isMutating } = useSWRMutation(
+    commentId ? `${repliesCacheKey}${commentId}` : null,
+    addReply
   );
 
   const handleOnSubmit = async (event) => {
@@ -21,11 +21,11 @@ export default function AddComment({ postId }) {
     const { author, comment } = Object.fromEntries(formData);
 
     //PUSH to posts comment to database
-    console.log({ author, comment, postId });
-    const { error, status } = await addTrigger({
+    console.log({ author, comment, commentId });
+    const { error, status } = await addReplyTrigger({
       author,
-      comment,
-      post_id: postId,
+      reply: comment,
+      comment_id: commentId,
     });
 
     if (error || status !== 201) {
@@ -34,11 +34,12 @@ export default function AddComment({ postId }) {
     }
 
     formRef.current.reset();
+    setReply(!reply);
   };
 
   return (
     <div className={styles.container}>
-      <h2>Add a comment</h2>
+      <h2>Add a reply</h2>
       <form ref={formRef} className={styles.form} onSubmit={handleOnSubmit}>
         <div className={styles.inputContainer}>
           <Label htmlFor='author'>Author</Label>
