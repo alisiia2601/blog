@@ -1,66 +1,74 @@
-import { useRouter } from "next/router";
-import styles from "./blog-post.module.css";
-import Comments from "./partials/comments";
-import AddComment from "./partials/add-comment";
-import Button from "@components/button";
-import Heading from "@components/heading";
-import BlogImageBanner from "@components/blog-image-banner";
-import useSWR  from "swr"
-import useSWRMutation from "swr/mutation"; 
-import { editPost, removePost, getPost, postCacheKey } from "@/api-routes/posts";
+import { useRouter } from 'next/router';
+import Comments from './partials/comments';
+import AddComment from './partials/add-comment';
+import Button from '@components/button';
+import Heading from '@components/heading';
+import BlogImageBanner from '@components/blog-image-banner';
+import useSWRMutation from 'swr/mutation';
+import useSWR from 'swr';
+import { removePost, getPost, postsCacheKey } from '../../../api-routes/posts';
+import { useUser } from '@supabase/auth-helpers-react';
 
 export default function BlogPost() {
-  const { trigger: deletePostTrigger } = useSWRMutation(postCacheKey, removePost, {
-  });
-
   const router = useRouter();
+  const user = useUser();
   const { slug } = router.query;
 
-  const { data : { data: post = {}} = {}, error } = useSWR(slug ? `${postCacheKey}${slug}` : null, () =>
-  getPost({slug}) 
+  const { data: { data = [] } = {}, error } = useSWR(
+    slug ? `${postsCacheKey}${slug}` : null,
+    () => getPost({ slug })
   );
-  console.log({  error });
 
+  const { trigger: deleteTrigger, isMutating } = useSWRMutation(
+    postsCacheKey,
+    removePost,
+    {
+      onError: (error) => {
+        console.log(error);
+      },
+    }
+  );
 
   const handleDeletePost = async () => {
-    const postId = post?.id; 
-    if (!postId) {
-      return; 
-    }
-    const { status, error } = await deletePostTrigger(postId);
-    console.log({ id: postId });
+    const postId = data.id;
+    const { status, error } = await deleteTrigger(postId);
+
     if (!error) {
-      router.push('/blog');
+      router.push(`/blog`);
     }
   };
- 
-  const handleEditPost = async () => {
-    router.push(`/blog/${slug}/edit`)
-    };
+
+  const handleEditPost = () => {
+    router.push(`/blog/${slug}/edit`);
+  };
 
   return (
     <>
-      <section className={styles.container}>
-        <Heading>{post?.title}</Heading>
-        {post?.image && <BlogImageBanner src={post.image} alt={post.title} />}
-        <div className={styles.dateContainer}>
-          <time className={styles.date}>{post?.created_at}</time>
-          <div className={styles.border} />
+      <section className="p-4 max-w-7xl m-auto">
+        <Heading>{data.title}</Heading>
+        {data?.image && <BlogImageBanner src={data.image} alt={data.title} />}
+        <div className='mb-4'>
+          <time className="text-accentPurple">{data.created_at}</time>
         </div>
-        <div dangerouslySetInnerHTML={{ __html: post?.body }} />
-        <span className={styles.author}>Author: {post?.author}</span>
+        <div dangerouslySetInnerHTML={{ __html: data.body }} />
+        <span className='text-xl py-4'>Author: {data?.Users?.alias ?? 'Author'}</span>
 
-        {/* The Delete & Edit part should only be showed if you are authenticated and you are the author */}
-        <div className={styles.buttonContainer}>
-          <Button onClick={handleDeletePost}>Delete</Button>
-          <Button onClick={handleEditPost}>Edit</Button>
-        </div>
+        {user && (
+          <div className="flex text-lightColor mt-2">
+            <Button onClick={() => handleDeletePost(data.id)} className="mr-2">
+              Delete
+            </Button>
+            <Button onClick={handleEditPost}>Edit</Button>
+          </div>
+        )}
       </section>
 
-      <Comments postId={post?.id} />
-
-      {/* This component should only be displayed if a user is authenticated */}
-      <AddComment postId={post?.id} />
+      {user && (
+        <>
+          <AddComment postId={data.id} />
+          <Comments postId={data.id} />
+        </>
+      )}
     </>
   );
 }

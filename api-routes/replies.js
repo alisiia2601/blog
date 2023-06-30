@@ -1,30 +1,31 @@
-import supabase from '@/lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
+export const replyCacheKey = 'api/replies';
 
-export const repliesCacheKey = '/api/replies';
-
-//GET all replies for a comment
-export const getReplies = async (comment_id) => {
+export const getReplies = async (commentId) => {
   const { data, error, status } = await supabase
     .from('replies')
-    .select('*')
-    .eq('comment_id', comment_id);
+    .select()
+    .eq('comment_id', commentId);
 
   return { data, error, status };
 };
 
-//POST reply
-export const addReply = async (_, { arg: reply }) => {
-  const { error, status } = await supabase.from('replies').insert({ ...reply });
+export const addReply = async (_, { arg: newReply }) => {
+  const { data, error, status } = await supabase
+    .from('replies')
+    .insert(newReply)
+    .single()
+    .eq('comment_id', newReply.commentId);
 
-  return { error, status };
+  return { data, error, status };
 };
 
-//DELETE reply
-export const deleteReply = async (_, { arg: id }) => {
-  const { error, status } = await supabase
+export const deleteReply = async (_, { arg: replyId }) => {
+  const { data, error, status } = await supabase
     .from('replies')
-    .delete()
-    .eq('id', id);
+    .delete(replyId)
+    .single()
+    .eq('id', replyId);
 
-  return { error, status };
+  return { data, error, status };
 };

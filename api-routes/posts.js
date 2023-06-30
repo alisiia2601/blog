@@ -1,7 +1,7 @@
-import supabase from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { uploadImage } from '@/utils/uploadImage';
 
-export const postCacheKey = '/api/posts';
+export const postsCacheKey = '/api/posts';
 
 //GET all posts
 export const getPosts = async () => {

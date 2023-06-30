@@ -1,82 +1,81 @@
-import Button from '@components/button';
-import Reply from '../partials/reply';
-import styles from './comment.module.css';
-import useSWR from 'swr';
-import useSWRMutation from 'swr/mutation';
-import { commentsCacheKey, removeComment } from '@/api-routes/comments';
-import { getReplies, repliesCacheKey } from '@/api-routes/replies';
-import { useState } from 'react';
+import Button from "@components/button";
+import { commentsCacheKey, deleteComment } from "@/api-routes/comments";
+import { addReply, getReplies, deleteReply, replyCacheKey } from "@/api-routes/replies";
+import { useRef } from "react";
+import useSWRMutation from "swr/mutation"
+import useSWR from "swr";
+import Input from "@components/input";
+import Label from "@components/label";
 
-export default function Comment({
-  author,
-  comment,
-  created_at,
-  id,
-  postAuthorId,
-}) {
-  const [reply, setReply] = useState(false);
+export default function Comment({ comment, createdAt, author, id: commentId }) {
 
-  //GET post comments
-  const {
-    data: { data = [] } = {},
-    error,
-    status,
-  } = useSWR(id ? `${repliesCacheKey}${id}` : null, () => getReplies(id));
-  console.log({ data });
-  console.log({ error, status });
+  const formRef = useRef();
 
-  const { trigger: deleteTrigger, isMutating } = useSWRMutation(
-    commentsCacheKey,
-    removeComment
-  );
+  const { data: { data = [] } = {}, error } = useSWR( commentId ? `${replyCacheKey}/${commentId}` : null, () => getReplies(commentId));
 
-  const handleDelete = async (id, trigger) => {
-    const { error, status } = await trigger(id);
+  const { trigger: deleteCommentTrigger } = useSWRMutation(commentsCacheKey, () => deleteComment(commentId), {
+    onError: (error) => {
+      console.log(error);
+    }
+  });
+  
 
-    if (error || status !== 204) {
-      console.log({ status, error });
-      return;
+  const { trigger: addReplyTrigger } = useSWRMutation(`${replyCacheKey}/${commentId}`, addReply, {
+    onError: (error) => {
+      console.log(error)
+    }
+  })
+
+  const { trigger: deleteReplyTrigger } = useSWRMutation( `${replyCacheKey}/${commentId}`, deleteReply, {
+    onError: (error) => {
+      console.log(error)
+    }
+  })
+
+  const handleDeleteComment = async () => {
+    const { data, error } = await deleteCommentTrigger(commentId)
+  };
+
+  const handleAddReply = async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const { replyText } = Object.fromEntries(formData);
+    const newReply = {
+      reply: replyText,
+      comment_id: commentId,
     }
 
-    console.log(
-      `${
-        trigger === 'deleteTrigger' ? 'Comment' : 'Reply'
-      } will be deleted, id: ${id}`
-    );
+    const { status, data, error } = await addReplyTrigger(newReply)
+    
+    formRef.current.reset();
   };
 
-  const handleReply = () => {
-    console.log('pressed reply button');
-    setReply(!reply);
-  };
+  const handledeleteReply = async (replyId) => {
+    const { data, error } = await deleteReplyTrigger(replyId)
+  }
 
   return (
-    <>
-      <div className={styles.container}>
-        <p>{comment}</p>
-        <p className={styles.author}>{author}</p>
-        <time className={styles.date}>{manipulateDate(created_at)}</time>
-        <div className={styles.buttonContainer}>
-          {isAuthorLogedIn({ postAuthor: postAuthorId }) && (
-            <Button onClick={() => handleDelete(id, deleteTrigger)}>
-              {isMutating ? 'Deleting...' : 'Delete'}
-            </Button>
-          )}
-          <Button onClick={handleReply}>{!reply ? 'Reply' : 'Exit'}</Button>
+    <div className='w-2/'>
+      <p>{comment}</p>
+      <p className='text-accentPurple font-bold'>- {author}</p>
+      <time>{createdAt}</time>
+
+      {data?.map((reply) => (
+        <div key={reply.id}>
+          <p>| {reply.reply}</p>
+          <button onClick={() => handledeleteReply(reply.id)} className="font-light pb-2 text-lightColor ">Remove reply</button>
         </div>
-      </div>
-      {(data.length > 0 || reply) && (
-        <div className={styles.repliesContainer}>
-          {data.map((reply) => (
-            <Reply
-              key={reply.id}
-              {...reply}
-              postAuthorId={postAuthorId}
-              handleDelete={handleDelete}
-            />
-          ))}
+      ))}
+
+      <form ref={formRef} onSubmit={handleAddReply}>
+        <div className='flex flex-col'>
+          <Button onClick={handleDeleteComment}>Delete</Button>
+          <Label htmlFor="replyText">Reply</Label>
+          <Input id="replyText" name="replyText"/>
+          <Button type="submit">Send</Button>
         </div>
-      )}
-    </>
+      </form>
+    </div>
   );
 }

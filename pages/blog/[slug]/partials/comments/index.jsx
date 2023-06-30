@@ -1,25 +1,20 @@
 import Comment from '../comment';
-import styles from './comments.module.css';
+import {getComments, commentsCacheKey,} from '@/api-routes/comments';
 import useSWR from 'swr';
-import { commentsCacheKey, getComments } from '@/api-routes/comments';
 
-export default function Comments({ postId, postAuthorId }) {
-  //GET post comments
-  const {
-    data: { data = [] } = {},
-    error,
-    status,
-  } = useSWR(postId ? `${commentsCacheKey}${postId}` : null, () =>
-    getComments(postId)
+export default function Comments({ postId }) {
+
+  const { data: { data = [] } = {}, error } = useSWR(
+    postId ? commentsCacheKey : null,
+    () => getComments(postId)
   );
 
   return (
-    <div className={styles.container}>
-      <h2>Comments</h2>
-      {data?.map((comment) => (
-        <Comment key={comment.id} {...comment} postAuthorId={postAuthorId} />
+    <div className='p-4'>
+      <h2 className='text-lg font-semibold'>Comments</h2>
+      {data.map((comment) => (
+        <Comment key={comment.id} {...comment} />
       ))}
-      {!data.length && <p>No comments</p>}
     </div>
   );
 }

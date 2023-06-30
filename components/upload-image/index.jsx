@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import classNames from "classnames";
 import Button from "@components/button";
-import styles from "./upload-image.module.css";
 import BlogImageBanner from "@components/blog-image-banner";
 
 const ImageUpload = ({ onImageUpload, onReset, src, className }) => {
@@ -61,15 +59,11 @@ const ImageUpload = ({ onImageUpload, onReset, src, className }) => {
   };
 
   return (
-    <div
-      className={classNames(styles.container, className)}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-    >
+    <div onDragOver={handleDragOver} onDrop={handleDrop}>
       {previewUrl ? (
         <>
           <BlogImageBanner src={previewUrl} alt="Preview" />
-          <div className={styles.overlay}>
+          <div>
             <Button
               type="button"
               onClick={() => {
@@ -86,22 +80,23 @@ const ImageUpload = ({ onImageUpload, onReset, src, className }) => {
           </div>
         </>
       ) : (
-        <label className={styles.label}>
-          <span className={styles.text}>Upload photo</span>
-          <input
+        <label>
+          <span>Upload photo</span>
+          {/* <input
             type="file"
             accept="image/*"
-            className={styles.input}
             onChange={handleImageSelect}
-          />
+            className="py-4"
+          /> */}
+          
         </label>
       )}
       <input
         ref={hiddenImageInputRef}
         type="file"
         accept="image/*"
-        className={styles.hiddenInput}
         onChange={handleImageSelect}
+        className="py-4"
       />
     </div>
   );

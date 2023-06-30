@@ -1,34 +1,34 @@
-import Heading from '@components/heading';
-import Link from 'next/link';
-import styles from './blog.module.css';
-import useSWR from 'swr';
-import { postCacheKey, getPosts } from '@/api-routes/posts';
-import { useUser } from '@supabase/auth-helpers-react';
+import Link from "next/link";
+import Heading from "@components/heading";
+import { getPosts, postsCacheKey } from "../../api-routes/posts";
+import useSWR from 'swr'
+import { useUser } from "@supabase/auth-helpers-react";
 
-export default function Blog() {
-  const { data: { data = [] } = {} } = useSWR(postCacheKey, getPosts);
+export default function Blog() {  
+  const user = useUser()
 
-
-  const user = useUser();
-  console.log(user);
+  const {
+    data: {data = []} = {}, 
+    error
+  } = useSWR(postsCacheKey, getPosts)
 
   return (
-    <section>
-      <Heading>Blog</Heading>
-      {data?.map((post) => (
-        <Link
-          key={post.slug}
-          className={styles.link}
-          href={`/blog/${post.slug}`}
-        >
-          <div className='w-full flex flex-col'>
-            <p>{post.title}</p>
-            <time className={styles.date}>
-
-            </time>
-          </div>
-        </Link>
-      ))}
+    <section className="w-full  text-darkColor md:p12 p-2">
+      <div className="border-2 border-black bg-lightColor">
+        <div className="flex">
+          <h1 className="text-4xl text-darkColor py-4 px-2 text-left">Blog</h1>
+        </div>
+        {data?.map((post) => (
+          <Link key={post.slug} href={`/blog/${post.slug}`}>
+            <div className="w-full flex flex-col border-t-2 border-black">
+              <p className="font-semibold px-2">{post.title}</p>
+              <time className="text-sm text-accentPurple px-2 pb-2">
+                {post.created_at.slice(0, 16)}
+              </time>
+            </div>
+          </Link>
+        ))}
+      </div>
     </section>
   );
 }
