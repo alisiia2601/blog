@@ -3,15 +3,14 @@ import { createSlug } from "@/utils/createSlug";
 import { addPost, postsCacheKey } from "../../api-routes/posts";
 import { useRouter } from "next/router";
 import useSWRMutation from 'swr/mutation';
-import useSWR from 'swr';
 import { useUser } from "@supabase/auth-helpers-react";
 
 
 export default function CreatePost() {
    const router = useRouter();
    const user = useUser()
-  console.log(postsCacheKey)
-  const { trigger: addPostTrigger, isMutating } = useSWRMutation(postsCacheKey, addPost, {
+  
+  const { trigger: addTrigger, isMutating } = useSWRMutation(postsCacheKey, addPost, {
     onError: (error) => {
       console.log(error);
     }
@@ -21,13 +20,14 @@ export default function CreatePost() {
     const slug = createSlug(titleInput);
     
     const newPost = {
-      body: editorContent,
       title: titleInput,
+      body: editorContent,
       slug,
       user_id: user.id,
       image,
     };
-    const { status, error } = await addPostTrigger(newPost); 
+    
+   const { status, error } = await addTrigger(newPost); 
     if (!error) {
       router.push(`/blog/${slug}`);
     }

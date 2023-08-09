@@ -14,11 +14,10 @@ export default function BlogPost() {
   const user = useUser();
   const { slug } = router.query;
 
-  const { data: { data = [] } = {}, error } = useSWR(
+  const { data: {data} = {}, error } = useSWR(
     slug ? `${postsCacheKey}${slug}` : null,
     () => getPost({ slug })
   );
-
   const { trigger: deleteTrigger, isMutating } = useSWRMutation(
     postsCacheKey,
     removePost,
@@ -30,7 +29,9 @@ export default function BlogPost() {
   );
 
   const handleDeletePost = async () => {
-    const postId = data.id;
+    const postId = data?.id;
+    if (!postId) return;
+
     const { status, error } = await deleteTrigger(postId);
 
     if (!error) {
@@ -45,30 +46,36 @@ export default function BlogPost() {
   return (
     <>
       <section className="p-4 max-w-7xl m-auto">
-        <Heading>{data.title}</Heading>
-        {data?.image && <BlogImageBanner src={data.image} alt={data.title} />}
-        <div className='mb-4'>
-          <time className="text-accentPurple">{data.created_at}</time>
-        </div>
-        <div dangerouslySetInnerHTML={{ __html: data.body }} />
-        <span className='text-xl py-4'>Author: {data?.Users?.alias ?? 'Author'}</span>
-
-        {user && (
-          <div className="flex text-lightColor mt-2">
-            <Button onClick={() => handleDeletePost(data.id)} className="mr-2">
-              Delete
-            </Button>
-            <Button onClick={handleEditPost}>Edit</Button>
-          </div>
+        {data ? (
+          <>
+            <Heading>{data.title}</Heading>
+            {data?.image && <BlogImageBanner src={data.image} alt={data.title} />}
+            <div className='mb-4'>
+              <time className="text-accentPurple">{data.created_at}</time>
+            </div>
+            <div dangerouslySetInnerHTML={{ __html: data.body }} />
+            <span className='text-xl py-4'>Author: {data?.Users?? 'Author'}</span>
+      
+            {user && (
+              <div className="flex text-lightColor mt-2">
+                <Button onClick={handleDeletePost} className="mr-2">
+                  Delete
+                </Button>
+                <Button onClick={handleEditPost}>Edit</Button>
+              </div>
+            )}
+          </>
+        ) : (
+          <p>Loading...</p> 
         )}
       </section>
-
-      {user && (
+      
+      {user && data ? (
         <>
           <AddComment postId={data.id} />
           <Comments postId={data.id} />
         </>
-      )}
+      ) : null}
     </>
   );
 }

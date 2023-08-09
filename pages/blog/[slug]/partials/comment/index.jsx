@@ -13,12 +13,11 @@ export default function Comment({ comment, createdAt, author, id: commentId }) {
 
   const { data: { data = [] } = {}, error } = useSWR( commentId ? `${replyCacheKey}/${commentId}` : null, () => getReplies(commentId));
 
-  const { trigger: deleteCommentTrigger } = useSWRMutation(commentsCacheKey, () => deleteComment(commentId), {
+  const { trigger: deleteCommentTrigger } = useSWRMutation(commentsCacheKey,deleteComment, {
     onError: (error) => {
-      console.log(error);
+      console.log(error)
     }
-  });
-  
+  })
 
   const { trigger: addReplyTrigger } = useSWRMutation(`${replyCacheKey}/${commentId}`, addReply, {
     onError: (error) => {

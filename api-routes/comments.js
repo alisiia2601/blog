@@ -14,18 +14,17 @@ export const addComment = async (_, { arg: newComment }) => {
   const { data, error, status } = await supabase
     .from('comments')
     .insert(newComment)
-    .single()
-    .eq('post_id', newComment.postId);
+    .single();
 
   return { data, error, status };
 };
 
-export const deleteComment = async (_, { id }) => {
+export const deleteComment = async (_, { arg: id }) => {
   const { data, error, status } = await supabase
     .from('comments')
-    .delete()
+    .delete(id)
+    .single()
     .eq('id', id);
 
   return { data, error, status };
 };
-
