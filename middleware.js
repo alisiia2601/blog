@@ -12,7 +12,7 @@ export async function middleware(req) {
   } = await supabase.auth.getSession()
 
  
-  if (session?.user.email?.endsWith('@gmail.com')) {
+  if (session?.user.email){
    
     return res
   }
